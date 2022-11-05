@@ -4,8 +4,15 @@ import pytest
 
 from entities import TodoEntry
 from persistence.errors import EntityNotFoundError, CreateError
-from persistence.mapper.memory import MemoryTodoEntryMapper
-from persistence.repository import TodoEntryRepository
+from persistence.mapper.memory import (
+    MemoryTodoEntryMapper,
+    MemoryTodoLabelMapper,
+)
+from persistence.repository import (
+    TodoEntryRepository,
+    TodoLabelRepository,
+)
+from value_objects import TodoLabel
 
 _memory_storage = {
     1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc))
@@ -59,3 +66,31 @@ async def test_todo_entry_create_error() -> None:
 
     with pytest.raises(CreateError):
         await repository.create(entity=data)
+
+
+@pytest.mark.asyncio
+async def test_save_todo_label() -> None:
+    mapper = MemoryTodoLabelMapper(storage=_memory_storage)
+    repository = TodoLabelRepository(mapper=mapper)
+    name = "Lorem Ipsum"
+
+    data = TodoLabel(
+        name=name,
+    )
+
+    value_object = await repository.create(value_object=data)
+    assert isinstance(value_object, TodoLabel)
+    assert value_object.name == name
+
+
+@pytest.mark.asyncio
+async def test_todo_label_create_error() -> None:
+    mapper = MemoryTodoLabelMapper(storage=None)
+    repository = TodoLabelRepository(mapper=mapper)
+
+    data = TodoLabel(
+        name="Lorem Ipsum",
+    )
+
+    with pytest.raises(CreateError):
+        await repository.create(value_object=data)
