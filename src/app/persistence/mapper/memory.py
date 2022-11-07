@@ -39,7 +39,7 @@ class MemoryTodoEntryMapper(TodoEntryMapperInterface):
             label = self._storage[fields.get("label_id")]
             entity.label = label
             return entity
-        except KeyError as error:
+        except (TypeError, KeyError) as error:
             raise UpdateMapperError(error)
 
     def _generate_unique_id(self) -> int:
