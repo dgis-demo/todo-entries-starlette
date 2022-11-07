@@ -9,3 +9,6 @@ class AbstractValueObject(BaseModel):
 
 class TodoLabel(AbstractValueObject):
     name: str
+
+    class Config:
+        orm_mode = True
