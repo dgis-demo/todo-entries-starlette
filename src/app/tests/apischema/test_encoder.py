@@ -2,7 +2,7 @@ from json import loads
 
 from apischema.encoder import (
     error_to_json,
-    entity_to_json,
+    base_model_to_json,
     encode_to_json_response,
     encode_error_to_json_response,
 )
@@ -28,10 +28,10 @@ def test_error_to_json() -> None:
     assert "path" in data
 
 
-def test_entity_to_json() -> None:
+def test_base_model_to_json() -> None:
     entity = AbstractEntity(id=1)
 
-    json = entity_to_json(data=entity)
+    json = base_model_to_json(data=entity)
     assert isinstance(json, str)
 
     data = loads(json)
@@ -41,7 +41,7 @@ def test_entity_to_json() -> None:
 
 def test_encode_to_json_response() -> None:
     entity = AbstractEntity(id=42)
-    data = encode_to_json_response(entity=entity)
+    data = encode_to_json_response(data=entity)
 
     assert isinstance(data, bytes)
 

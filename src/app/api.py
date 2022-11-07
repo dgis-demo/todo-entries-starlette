@@ -7,12 +7,28 @@ from starlette.responses import Response
 from starlette.routing import Route
 
 from apischema.encoder import encode_to_json_response, encode_error_to_json_response
-from apischema.validator import validate_todo_entry
+from apischema.validator import (
+    validate_todo_entry,
+    validate_todo_label,
+)
 from entities import TodoEntry
-from persistence.mapper.memory import MemoryTodoEntryMapper
-from persistence.repository import TodoEntryRepository
+from persistence.mapper.memory import (
+    MemoryTodoEntryMapper,
+    MemoryTodoLabelMapper,
+)
+from persistence.repository import (
+    TodoEntryRepository,
+    TodoLabelRepository,
+)
+from value_objects import TodoLabel
 
-from usecases import get_todo_entry, create_todo_entry, UseCaseError, NotFoundError
+from usecases import (
+    get_todo_entry, 
+    create_todo_entry, 
+    create_todo_label,
+    UseCaseError, 
+    NotFoundError,
+)
 
 _MAPPER_IN_MEMORY_STORAGE = {
     1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc))
@@ -45,7 +61,7 @@ async def get_todo(request: Request) -> Response:
         repository = TodoEntryRepository(mapper=mapper)
 
         entity = await get_todo_entry(identifier=identifier, repository=repository)
-        content = encode_to_json_response(entity=entity)
+        content = encode_to_json_response(data=entity)
 
     except NotFoundError:
         return Response(
@@ -85,7 +101,7 @@ async def create_new_todo_entry(request: Request) -> Response:
     try:
         entity = TodoEntry(**data)
         entity = await create_todo_entry(entity=entity, repository=repository)
-        content = encode_to_json_response(entity=entity)
+        content = encode_to_json_response(data=entity)
     except UseCaseError:
         return Response(
             content=None,
@@ -98,10 +114,54 @@ async def create_new_todo_entry(request: Request) -> Response:
     )
 
 
+async def create_new_todo_label(request: Request) -> Response:
+    """
+    summary: Creates new TodoLabel
+    responses:
+        "201":
+            description: TodoLabel was created.
+            examples:
+                {"todo_id": 1, "label": "Lorem ipsum"}
+        "422":
+            description: Validation error.
+        "500":
+            description: Something went wrong, try again later.
+    """
+    data = await request.json()
+    errors = validate_todo_label(raw_data=data)
+    if errors:
+        return Response(
+            content=encode_error_to_json_response(error=errors),
+            status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            media_type="application/json",
+        )
+
+    mapper = MemoryTodoLabelMapper(storage=_MAPPER_IN_MEMORY_STORAGE)
+    repository = TodoLabelRepository(mapper=mapper)
+
+    try:
+        value_object = TodoLabel(**data)
+        value_object = await create_todo_label(
+            value_object=value_object, 
+            repository=repository,
+        )
+        content = encode_to_json_response(data=value_object)
+    except UseCaseError:
+        return Response(
+            content=None,
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            media_type="application/json",
+        )
+
+    return Response(
+        content=content, status_code=HTTPStatus.CREATED, media_type="application/json"
+    )
+
 app = Starlette(
     debug=True,
     routes=[
         Route("/todo/", create_new_todo_entry, methods=["POST"]),
         Route("/todo/{id:int}/", get_todo, methods=["GET"]),
+        Route("/label/", create_new_todo_label, methods=["POST"]),
     ],
 )

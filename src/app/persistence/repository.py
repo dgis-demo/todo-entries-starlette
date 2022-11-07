@@ -1,7 +1,11 @@
 from entities import TodoEntry
 from persistence.errors import EntityNotFoundError, CreateError
 from persistence.mapper.errors import EntityNotFoundMapperError, CreateMapperError
-from persistence.mapper.interfaces import TodoEntryMapperInterface
+from persistence.mapper.interfaces import (
+    TodoEntryMapperInterface,
+    TodoLabelMapperInterface,
+)
+from value_objects import TodoLabel
 
 
 class TodoEntryRepository:
@@ -19,5 +23,18 @@ class TodoEntryRepository:
     async def create(self, entity: TodoEntry) -> TodoEntry:
         try:
             return await self._mapper.create(entity=entity)
+        except CreateMapperError as error:
+            raise CreateError(error)
+
+
+class TodoLabelRepository:
+    _mapper: TodoLabelMapperInterface
+
+    def __init__(self, mapper: TodoLabelMapperInterface) -> None:
+        self._mapper = mapper
+
+    async def create(self, value_object: TodoLabel) -> TodoLabel:
+        try:
+            return await self._mapper.create(value_object=value_object)
         except CreateMapperError as error:
             raise CreateError(error)

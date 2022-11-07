@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "todo-entries"
+version = "0.1.0"
+description = ""
+authors = ["user <user@mail.com>"]
+readme = "README.md"
+packages = [{include = "todo_entries"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+starlette = "^0.21.0"
+uvicorn = "^0.19.0"
+pydantic = "^1.10.2"
+jsonschema = "^4.17.0"
+pyyaml = "^6.0"
+pytest = "^7.2.0"
+pytest-asyncio = "^0.20.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
