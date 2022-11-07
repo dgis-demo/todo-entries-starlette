@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 from entities import TodoEntry
+from value_objects import TodoLabel
 
 
 class TodoEntryMapperInterface(metaclass=ABCMeta):
@@ -11,3 +12,9 @@ class TodoEntryMapperInterface(metaclass=ABCMeta):
     @abstractmethod
     async def create(self, entity: TodoEntry) -> TodoEntry:
         """Creates new TodoEntry in persistence layer"""
+
+
+class TodoLabelMapperInterface(metaclass=ABCMeta):
+    @abstractmethod
+    async def create(self, value_object: TodoLabel) -> TodoLabel:
+        """Creates new TodoLabel in persistence layer"""
