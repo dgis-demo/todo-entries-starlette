@@ -1,4 +1,8 @@
 from json import loads
+import uuid
+
+from pydantic import BaseModel
+import pytest
 
 from apischema.encoder import (
     error_to_json,
@@ -8,6 +12,7 @@ from apischema.encoder import (
 )
 from apischema.validator import SchemaError
 from entities import AbstractEntity
+from value_objects import AbstractValueObject
 
 
 def test_error_to_json() -> None:
@@ -28,10 +33,15 @@ def test_error_to_json() -> None:
     assert "path" in data
 
 
-def test_base_model_to_json() -> None:
-    entity = AbstractEntity(id=1)
-
-    json = base_model_to_json(data=entity)
+@pytest.mark.parametrize(
+    "base_model",
+    [
+        AbstractEntity(id=1),
+        AbstractValueObject(id=uuid.uuid4()),
+    ]
+)
+def test_base_model_to_json(base_model: BaseModel) -> None:
+    json = base_model_to_json(data=base_model)
     assert isinstance(json, str)
 
     data = loads(json)
@@ -39,9 +49,15 @@ def test_base_model_to_json() -> None:
     assert "id" in data
 
 
-def test_encode_to_json_response() -> None:
-    entity = AbstractEntity(id=42)
-    data = encode_to_json_response(data=entity)
+@pytest.mark.parametrize(
+    "base_model",
+    [
+        AbstractEntity(id=42),
+        AbstractValueObject(id=uuid.uuid4()),
+    ]
+)
+def test_encode_to_json_response(base_model: BaseModel) -> None:
+    data = encode_to_json_response(data=base_model)
 
     assert isinstance(data, bytes)
 
