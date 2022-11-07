@@ -11,9 +11,9 @@ todo_entry_creation_schema = {
 
 todo_entry_updating_schema = {
     "type": "object",
-    "required": [],
+    "required": ["label_id"],
     "properties": {
-        "label_id": {"type": "integer", "minimum": 10_001, "maximum": 20_000},
+        "label_id": {"type": "integer", "minimum": 1},
     },
 }
 

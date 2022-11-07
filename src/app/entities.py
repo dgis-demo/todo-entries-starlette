@@ -15,3 +15,6 @@ class TodoEntry(AbstractEntity):
     detail: Optional[str]
     created_at: datetime
     label: Optional[TodoLabel]
+
+    class Config:
+        orm_mode = True

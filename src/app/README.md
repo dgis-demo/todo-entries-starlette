@@ -18,3 +18,6 @@ Business entities.
 
 ## 🐍 usecases.py
 Business logic application.
+
+## 🐍 value_objects.py
+Auxiliary data related to entities.

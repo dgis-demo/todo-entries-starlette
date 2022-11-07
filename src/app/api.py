@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from http import HTTPStatus
 
 from starlette.applications import Starlette
@@ -13,9 +12,10 @@ from apischema.validator import (
     validate_todo_label,
 )
 from entities import TodoEntry
-from persistence.mapper.memory import (
-    MemoryTodoEntryMapper,
-    MemoryTodoLabelMapper,
+from persistence.database import session_maker
+from persistence.mapper.sqlite import (
+    SqliteTodoEntryMapper,
+    SqliteTodoLabelMapper,
 )
 from persistence.repository import (
     TodoEntryRepository,
@@ -31,10 +31,6 @@ from usecases import (
     UseCaseError, 
     NotFoundError,
 )
-
-_MAPPER_IN_MEMORY_STORAGE = {
-    1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc))
-}
 
 
 async def get_todo(request: Request) -> Response:
@@ -59,7 +55,7 @@ async def get_todo(request: Request) -> Response:
     try:
         identifier = request.path_params["id"]  # TODO: add validation
 
-        mapper = MemoryTodoEntryMapper(storage=_MAPPER_IN_MEMORY_STORAGE)
+        mapper = SqliteTodoEntryMapper(storage=session_maker)
         repository = TodoEntryRepository(mapper=mapper)
 
         entity = await get_todo_entry(identifier=identifier, repository=repository)
@@ -97,7 +93,7 @@ async def create_new_todo_entry(request: Request) -> Response:
             media_type="application/json",
         )
 
-    mapper = MemoryTodoEntryMapper(storage=_MAPPER_IN_MEMORY_STORAGE)
+    mapper = SqliteTodoEntryMapper(storage=session_maker)
     repository = TodoEntryRepository(mapper=mapper)
 
     try:
@@ -138,7 +134,7 @@ async def update_todo(request: Request) -> Response:
             media_type="application/json",
         )
 
-    mapper = MemoryTodoEntryMapper(storage=_MAPPER_IN_MEMORY_STORAGE)
+    mapper = SqliteTodoEntryMapper(storage=session_maker)
     repository = TodoEntryRepository(mapper=mapper)
 
     try:
@@ -183,7 +179,7 @@ async def create_new_todo_label(request: Request) -> Response:
             media_type="application/json",
         )
 
-    mapper = MemoryTodoLabelMapper(storage=_MAPPER_IN_MEMORY_STORAGE)
+    mapper = SqliteTodoLabelMapper(storage=session_maker)
     repository = TodoLabelRepository(mapper=mapper)
 
     try:
