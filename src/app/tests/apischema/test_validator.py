@@ -1,5 +1,5 @@
 from apischema.validator import (
-    validate_todo_entry,
+    validate_todo_entry_creation,
     validate_todo_label,
 )
 
@@ -11,7 +11,7 @@ def test_short_summary_in_todo_entry() -> None:
         "created_at": "2022-09-05T18:07:19.280040+00:00",
     }
 
-    error = validate_todo_entry(raw_data=data)
+    error = validate_todo_entry_creation(raw_data=data)
     assert error.path == "summary"
     assert "maxLength" in error.validation_schema
     assert "minLength" in error.validation_schema

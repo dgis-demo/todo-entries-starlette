@@ -13,6 +13,10 @@ class TodoEntryMapperInterface(metaclass=ABCMeta):
     async def create(self, entity: TodoEntry) -> TodoEntry:
         """Creates new TodoEntry in persistence layer"""
 
+    @abstractmethod
+    async def update(self, identifier: int, fields: dict) -> TodoEntry:
+        """Updates a TodoEntry in persistence layer"""
+
 
 class TodoLabelMapperInterface(metaclass=ABCMeta):
     @abstractmethod
