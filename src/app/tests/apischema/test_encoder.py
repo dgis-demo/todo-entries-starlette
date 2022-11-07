@@ -1,5 +1,4 @@
 from json import loads
-import uuid
 
 from pydantic import BaseModel
 import pytest
@@ -37,7 +36,7 @@ def test_error_to_json() -> None:
     "base_model",
     [
         AbstractEntity(id=1),
-        AbstractValueObject(id=uuid.uuid4()),
+        AbstractValueObject(id=2),
     ]
 )
 def test_base_model_to_json(base_model: BaseModel) -> None:
@@ -53,7 +52,7 @@ def test_base_model_to_json(base_model: BaseModel) -> None:
     "base_model",
     [
         AbstractEntity(id=42),
-        AbstractValueObject(id=uuid.uuid4()),
+        AbstractValueObject(id=24),
     ]
 )
 def test_encode_to_json_response(base_model: BaseModel) -> None:

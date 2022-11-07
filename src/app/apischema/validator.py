@@ -6,6 +6,7 @@ from pydantic.dataclasses import dataclass
 
 from apischema.schema import (
     todo_entry_creation_schema,
+    todo_entry_updating_schema,
     todo_label_creation_schema,
 )
 
@@ -34,8 +35,12 @@ def _validate(raw_data: dict, schema: dict) -> Optional[SchemaError]:
         return _validation_error_to_structure(error=err)
 
 
-def validate_todo_entry(raw_data: dict) -> Optional[SchemaError]:
+def validate_todo_entry_creation(raw_data: dict) -> Optional[SchemaError]:
     return _validate(raw_data=raw_data, schema=todo_entry_creation_schema)
+
+
+def validate_todo_entry_updating(raw_data: dict) -> Optional[SchemaError]:
+    return _validate(raw_data=raw_data, schema=todo_entry_updating_schema)
 
 
 def validate_todo_label(raw_data: dict) -> Optional[SchemaError]:

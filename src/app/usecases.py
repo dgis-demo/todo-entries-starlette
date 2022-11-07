@@ -2,6 +2,7 @@ from entities import TodoEntry
 from persistence.errors import (
     CreateError, 
     EntityNotFoundError,
+    UpdateError,
 )
 from persistence.repository import (
     TodoEntryRepository,
@@ -34,9 +35,23 @@ async def create_todo_entry(
         raise UseCaseError(error)
 
 
+async def update_todo_entry(
+    identifier: int,
+    fields: dict,
+    repository: TodoEntryRepository,
+) -> TodoEntry:
+    try:
+        return await repository.update(
+            identifier=identifier,
+            fields=fields,
+        )
+    except UpdateError as error:
+        raise UseCaseError(error)
+
+
 async def create_todo_label(
-        value_object: TodoLabel,
-        repository: TodoLabelRepository,
+    value_object: TodoLabel,
+    repository: TodoLabelRepository,
 ) -> TodoEntry:
     try:
         return await repository.create(value_object=value_object)

@@ -1,8 +1,11 @@
 from random import randint
-import uuid
 
 from entities import TodoEntry
-from persistence.mapper.errors import EntityNotFoundMapperError, CreateMapperError
+from persistence.mapper.errors import (
+    EntityNotFoundMapperError, 
+    CreateMapperError,
+    UpdateMapperError,
+)
 from persistence.mapper.interfaces import (
     TodoEntryMapperInterface,
     TodoLabelMapperInterface,
@@ -30,13 +33,21 @@ class MemoryTodoEntryMapper(TodoEntryMapperInterface):
         except TypeError as error:
             raise CreateMapperError(error)
 
+    async def update(self, identifier: int, fields: dict) -> TodoEntry:
+        try:
+            entity = self._storage[identifier]
+            label = self._storage[fields.get("label_id")]
+            entity.label = label
+            return entity
+        except KeyError as error:
+            raise UpdateMapperError(error)
+
     def _generate_unique_id(self) -> int:
         identifier = randint(1, 10_000)
         while identifier in self._storage:
             identifier = randint(1, 10_000)
 
         return identifier
-
 
 class MemoryTodoLabelMapper(TodoLabelMapperInterface):
     _storage: dict
@@ -46,8 +57,15 @@ class MemoryTodoLabelMapper(TodoLabelMapperInterface):
 
     async def create(self, value_object: TodoLabel) -> TodoLabel:
         try:
-            value_object.id = uuid.uuid4()
+            value_object.id = self._generate_unique_id()
             self._storage[value_object.id] = value_object
             return value_object
         except TypeError as error:
             raise CreateMapperError(error)
+
+    def _generate_unique_id(self) -> int:
+        identifier = randint(10_101, 20_000)
+        while identifier in self._storage:
+            identifier = randint(1, 10_000)
+
+        return identifier

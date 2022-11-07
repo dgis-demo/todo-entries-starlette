@@ -1,6 +1,14 @@
 from entities import TodoEntry
-from persistence.errors import EntityNotFoundError, CreateError
-from persistence.mapper.errors import EntityNotFoundMapperError, CreateMapperError
+from persistence.errors import (
+    EntityNotFoundError, 
+    CreateError,
+    UpdateError,
+)
+from persistence.mapper.errors import (
+    EntityNotFoundMapperError, 
+    CreateMapperError,
+    UpdateMapperError,
+)
 from persistence.mapper.interfaces import (
     TodoEntryMapperInterface,
     TodoLabelMapperInterface,
@@ -25,6 +33,15 @@ class TodoEntryRepository:
             return await self._mapper.create(entity=entity)
         except CreateMapperError as error:
             raise CreateError(error)
+
+    async def update(self, identifier: int, fields: dict) -> TodoEntry:
+        try:
+            return await self._mapper.update(
+                identifier=identifier,
+                fields=fields,
+            )
+        except UpdateMapperError as error:
+            raise UpdateError(error)
 
 
 class TodoLabelRepository:

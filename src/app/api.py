@@ -8,7 +8,8 @@ from starlette.routing import Route
 
 from apischema.encoder import encode_to_json_response, encode_error_to_json_response
 from apischema.validator import (
-    validate_todo_entry,
+    validate_todo_entry_creation,
+    validate_todo_entry_updating,
     validate_todo_label,
 )
 from entities import TodoEntry
@@ -25,6 +26,7 @@ from value_objects import TodoLabel
 from usecases import (
     get_todo_entry, 
     create_todo_entry, 
+    update_todo_entry,
     create_todo_label,
     UseCaseError, 
     NotFoundError,
@@ -87,7 +89,7 @@ async def create_new_todo_entry(request: Request) -> Response:
             description: Something went wrong, try again later.
     """
     data = await request.json()
-    errors = validate_todo_entry(raw_data=data)
+    errors = validate_todo_entry_creation(raw_data=data)
     if errors:
         return Response(
             content=encode_error_to_json_response(error=errors),
@@ -101,6 +103,51 @@ async def create_new_todo_entry(request: Request) -> Response:
     try:
         entity = TodoEntry(**data)
         entity = await create_todo_entry(entity=entity, repository=repository)
+        content = encode_to_json_response(data=entity)
+    except UseCaseError:
+        return Response(
+            content=None,
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            media_type="application/json",
+        )
+
+    return Response(
+        content=content, status_code=HTTPStatus.CREATED, media_type="application/json"
+    )
+
+
+async def update_todo(request: Request) -> Response:
+    """
+    summary: Updates new TodoEntry
+    responses:
+        "201":
+            description: TodoEntry was created.
+            examples:
+                {"label_id": 1}
+        "422":
+            description: Validation error.
+        "500":
+            description: Something went wrong, try again later.
+    """
+    data = await request.json()
+    errors = validate_todo_entry_updating(raw_data=data)
+    if errors:
+        return Response(
+            content=encode_error_to_json_response(error=errors),
+            status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            media_type="application/json",
+        )
+
+    mapper = MemoryTodoEntryMapper(storage=_MAPPER_IN_MEMORY_STORAGE)
+    repository = TodoEntryRepository(mapper=mapper)
+
+    try:
+        identifier = request.path_params["id"]  # TODO: add validation
+        entity = await update_todo_entry(
+            identifier=identifier, 
+            fields=data,
+            repository=repository,
+        )
         content = encode_to_json_response(data=entity)
     except UseCaseError:
         return Response(
@@ -162,6 +209,7 @@ app = Starlette(
     routes=[
         Route("/todo/", create_new_todo_entry, methods=["POST"]),
         Route("/todo/{id:int}/", get_todo, methods=["GET"]),
+        Route("/todo/{id:int}/", update_todo, methods=["PATCH"]),
         Route("/label/", create_new_todo_label, methods=["POST"]),
     ],
 )
