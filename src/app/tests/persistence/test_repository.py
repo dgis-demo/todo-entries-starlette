@@ -3,7 +3,11 @@ from datetime import datetime, timezone
 import pytest
 
 from entities import TodoEntry
-from persistence.errors import EntityNotFoundError, CreateError
+from persistence.errors import (
+    EntityNotFoundError, 
+    CreateError,
+    UpdateError,
+)
 from persistence.mapper.memory import (
     MemoryTodoEntryMapper,
     MemoryTodoLabelMapper,
@@ -15,7 +19,8 @@ from persistence.repository import (
 from value_objects import TodoLabel
 
 _memory_storage = {
-    1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc))
+    1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc)),
+    10_001: TodoLabel(id=10_001, name="Lorem"),
 }
 
 
@@ -66,6 +71,36 @@ async def test_todo_entry_create_error() -> None:
 
     with pytest.raises(CreateError):
         await repository.create(entity=data)
+
+
+@pytest.mark.asyncio
+async def test_save_todo_entry() -> None:
+    mapper = MemoryTodoEntryMapper(storage=_memory_storage)
+    repository = TodoEntryRepository(mapper=mapper)
+    identifier = 1
+    fields = {"label_id": 10_001}
+
+    entity = await repository.update(
+        identifier=identifier,
+        fields=fields,
+    )
+    assert isinstance(entity, TodoEntry)
+    assert entity.id == identifier
+    assert entity.label.id == 10_001
+
+
+@pytest.mark.asyncio
+async def test_todo_entry_update_error() -> None:
+    mapper = MemoryTodoEntryMapper(storage=None)
+    repository = TodoEntryRepository(mapper=mapper)
+    identifier = 1
+    fields = {"label_id": 10_001}
+
+    with pytest.raises(UpdateError):
+        await repository.update(
+            identifier=identifier,
+            fields=fields,
+        )
 
 
 @pytest.mark.asyncio

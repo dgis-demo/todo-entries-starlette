@@ -1,5 +1,6 @@
 from apischema.validator import (
     validate_todo_entry_creation,
+    validate_todo_entry_updating,
     validate_todo_label,
 )
 
@@ -15,6 +16,16 @@ def test_short_summary_in_todo_entry() -> None:
     assert error.path == "summary"
     assert "maxLength" in error.validation_schema
     assert "minLength" in error.validation_schema
+    assert "type" in error.validation_schema
+
+
+def test_str_label_id_in_todo_entry() -> None:
+    data = {
+        "label_id": "42",
+    }
+
+    error = validate_todo_entry_updating(raw_data=data)
+    assert error.path == "label_id"
     assert "type" in error.validation_schema
 
 
